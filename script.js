@@ -1174,25 +1174,3 @@ const waitOwner = setInterval(() => {
     }
   });
 }, 300);
-
-const { auth, onAuthStateChanged } = window._firebase;
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    // SUDAH LOGIN
-    document.getElementById("navGuest").style.display = "none";
-    document.getElementById("navUser").style.display = "flex";
-
-    // tampilkan data user
-    document.getElementById("navUsername").innerText = user.email;
-
-    console.log("User login:", user.email);
-
-  } else {
-    // BELUM LOGIN
-    document.getElementById("navGuest").style.display = "flex";
-    document.getElementById("navUser").style.display = "none";
-
-    console.log("Belum login");
-  }
-});
