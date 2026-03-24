@@ -6,13 +6,13 @@
 // ============ FIREBASE CONFIG ============
 // GANTI DENGAN KONFIGURASI FIREBASE KAMU
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAuZLwwomxlNUjcPp4JYILdSz4EAWtoRxY",
+  authDomain: "dooniniks-paradise.firebaseapp.com",
+  databaseURL: "https://dooniniks-paradise-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "dooniniks-paradise",
+  storageBucket: "dooniniks-paradise.firebasestorage.app",
+  messagingSenderId: "1:140802324914:web:f2e4f4f4656b75b240ccab",
+  appId: "G-Z001R5J8NR"
 };
 
 firebase.initializeApp(firebaseConfig);
