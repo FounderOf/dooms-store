@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DOOMINIKS STORE</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, set, get, push, onValue, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+    // ===== GANTI DENGAN CONFIG FIREBASE KAMU =====
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    // Expose to global scope
+    window._db = db;
+    window._storage = storage;
+    window._fb = { ref, set, get, push, onValue, update, remove, serverTimestamp, sRef, uploadBytes, getDownloadURL };
+
+    // Signal app ready
+    window._firebaseReady = true;
+    document.dispatchEvent(new Event('firebaseReady'));
+  </script>
+</head>
+<body>
+
+<!-- ============ LOADING SCREEN ============ -->
+<div id="loading-screen">
+  <div class="loading-content">
+    <div class="loading-logo">
+      <span class="loading-d">D</span><span class="loading-rest">OOMINIKS</span>
+    </div>
+    <div class="loading-sub">STORE</div>
+    <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
+    <div class="loading-status">Initializing systems...</div>
+  </div>
+  <div class="loading-particles" id="loadingParticles"></div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div id="app" style="display:none">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-logo" onclick="showSection('home')">
+      <span class="logo-d">D</span>OOMINIKS <span class="logo-store">STORE</span>
+    </div>
+    <div class="nav-links">
+      <a onclick="showSection('home')" class="nav-link active" data-section="home"><i class="fas fa-home"></i> Home</a>
+      <a onclick="showSection('products')" class="nav-link" data-section="products"><i class="fas fa-box"></i> Produk</a>
+      <a onclick="showSection('reviews')" class="nav-link" data-section="reviews"><i class="fas fa-star"></i> Ulasan</a>
+      <a onclick="openDiscord()" class="nav-link discord-link"><i class="fab fa-discord"></i> Discord</a>
+    </div>
+    <div class="nav-right">
+      <div id="nav-guest" class="nav-auth">
+        <button class="btn-ghost" onclick="showModal('loginModal')">Login</button>
+        <button class="btn-red" onclick="showModal('registerModal')">Daftar</button>
+      </div>
+      <div id="nav-user" class="nav-user-info" style="display:none">
+        <div class="nav-coins"><i class="fas fa-coins"></i> <span id="navCoins">0</span></div>
+        <div class="nav-avatar" onclick="showSection('profile')">
+          <i class="fas fa-user"></i>
+          <span id="navUsername">User</span>
+        </div>
+        <button class="btn-ghost small" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </div>
+    <button class="hamburger" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
+  </nav>
+
+  <!-- ========== SECTION: HOME ========== -->
+  <section id="section-home" class="section active">
+    <div class="hero">
+      <div class="hero-bg-effects">
+        <div class="hero-orb orb1"></div>
+        <div class="hero-orb orb2"></div>
+        <div class="hero-orb orb3"></div>
+      </div>
+      <div class="hero-content">
+        <div class="hero-badge">🔥 PREMIUM DIGITAL STORE</div>
+        <h1 class="hero-title">DOOMINIKS<br><span class="hero-store-text">STORE</span></h1>
+        <p class="hero-sub">Platform belanja digital terpercaya dengan produk premium pilihan. Transaksi aman, proses cepat.</p>
+        <div class="hero-btns">
+          <button class="btn-red large" onclick="showSection('products')"><i class="fas fa-shopping-bag"></i> Belanja Sekarang</button>
+          <button class="btn-ghost large" onclick="openDiscord()"><i class="fab fa-discord"></i> Join Discord</button>
+        </div>
+        <div class="hero-stats" id="heroStats">
+          <div class="stat-item"><span class="stat-num" id="statProducts">0</span><span class="stat-label">Produk</span></div>
+          <div class="stat-item"><span class="stat-num" id="statOrders">0</span><span class="stat-label">Pesanan</span></div>
+          <div class="stat-item"><span class="stat-num" id="statReviews">0</span><span class="stat-label">Ulasan</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Featured Products -->
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Produk <span class="red">Unggulan</span></h2>
+        <button class="btn-outline" onclick="showSection('products')">Lihat Semua <i class="fas fa-arrow-right"></i></button>
+      </div>
+      <div class="products-grid" id="featuredProducts"></div>
+    </div>
+
+    <!-- Latest Reviews -->
+    <div class="container mt-60">
+      <div class="section-header">
+        <h2 class="section-title">Ulasan <span class="red">Terbaru</span></h2>
+        <button class="btn-outline" onclick="showSection('reviews')">Lihat Semua <i class="fas fa-arrow-right"></i></button>
+      </div>
+      <div class="reviews-grid" id="homeReviews"></div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION: PRODUCTS ========== -->
+  <section id="section-products" class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Semua <span class="red">Produk</span></h2>
+        <div class="search-wrap">
+          <input type="text" id="searchProduct" placeholder="Cari produk..." class="search-input" oninput="filterProducts()"/>
+          <i class="fas fa-search search-icon"></i>
+        </div>
+      </div>
+      <div class="products-grid" id="allProducts"></div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION: REVIEWS ========== -->
+  <section id="section-reviews" class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Ulasan <span class="red">Pelanggan</span></h2>
+      </div>
+      <div class="review-summary-card" id="reviewSummary"></div>
+      <div class="reviews-grid full" id="allReviews"></div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION: PROFILE ========== -->
+  <section id="section-profile" class="section">
+    <div class="container">
+      <div class="profile-card">
+        <div class="profile-header">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar"><i class="fas fa-user"></i></div>
+            <div class="profile-badges-display" id="profileBadgesDisplay"></div>
+          </div>
+          <div class="profile-info">
+            <h2 id="profileUsername" class="profile-name">Username</h2>
+            <div id="profileBadgeList" class="badge-list-row"></div>
+            <div class="profile-stats-row">
+              <div class="profile-stat-box">
+                <i class="fas fa-wallet"></i>
+                <div>
+                  <span class="stat-label">Saldo IDR</span>
+                  <span class="stat-val" id="profileBalance">Rp 0</span>
+                </div>
+              </div>
+              <div class="profile-stat-box">
+                <i class="fas fa-coins"></i>
+                <div>
+                  <span class="stat-label">Koin</span>
+                  <span class="stat-val" id="profileCoins">0</span>
+                </div>
+              </div>
+            </div>
+            <div class="profile-actions">
+              <button class="btn-red" onclick="showModal('topupModal')"><i class="fas fa-plus-circle"></i> Top Up Saldo</button>
+              <button class="btn-outline" onclick="showModal('topupCoinModal')"><i class="fas fa-coins"></i> Top Up Koin</button>
+              <button class="btn-ghost small" onclick="showModal('chatModal')"><i class="fas fa-comment"></i> Chat CS</button>
+            </div>
+          </div>
+        </div>
+        <div class="profile-tabs">
+          <button class="tab-btn active" onclick="switchProfileTab('orders')">Pesanan Saya</button>
+          <button class="tab-btn" onclick="switchProfileTab('transactions')">Transaksi</button>
+        </div>
+        <div id="profileOrders" class="tab-content active"></div>
+        <div id="profileTransactions" class="tab-content"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION: OWNER PANEL ========== -->
+  <section id="section-owner" class="section">
+    <div class="container">
+      <div class="owner-header">
+        <h2 class="section-title"><i class="fas fa-crown"></i> Owner <span class="red">Panel</span></h2>
+        <div class="owner-nav">
+          <button class="owner-tab active" onclick="switchOwnerTab('dashboard')"><i class="fas fa-chart-bar"></i> Dashboard</button>
+          <button class="owner-tab" onclick="switchOwnerTab('manageProducts')"><i class="fas fa-box"></i> Produk</button>
+          <button class="owner-tab" onclick="switchOwnerTab('orderLog')"><i class="fas fa-list"></i> Pesanan</button>
+          <button class="owner-tab" onclick="switchOwnerTab('txHistory')"><i class="fas fa-history"></i> Transaksi</button>
+          <button class="owner-tab" onclick="switchOwnerTab('chatOwner')"><i class="fas fa-comments"></i> Chat</button>
+          <button class="owner-tab" onclick="switchOwnerTab('discounts')"><i class="fas fa-tag"></i> Diskon</button>
+          <button class="owner-tab" onclick="switchOwnerTab('badgeGift')"><i class="fas fa-award"></i> Badge</button>
+          <button class="owner-tab" onclick="switchOwnerTab('ownerSettings')"><i class="fas fa-cog"></i> Pengaturan</button>
+        </div>
+      </div>
+
+      <!-- Dashboard -->
+      <div id="tab-dashboard" class="owner-tab-content active">
+        <div class="dashboard-grid">
+          <div class="dash-card"><i class="fas fa-box red-icon"></i><div><span class="dash-num" id="dashProducts">0</span><span class="dash-label">Produk</span></div></div>
+          <div class="dash-card"><i class="fas fa-shopping-cart red-icon"></i><div><span class="dash-num" id="dashOrders">0</span><span class="dash-label">Total Pesanan</span></div></div>
+          <div class="dash-card"><i class="fas fa-money-bill-wave red-icon"></i><div><span class="dash-num" id="dashRevenue">Rp 0</span><span class="dash-label">Total Pendapatan</span></div></div>
+          <div class="dash-card"><i class="fas fa-users red-icon"></i><div><span class="dash-num" id="dashUsers">0</span><span class="dash-label">Pengguna</span></div></div>
+        </div>
+        <div class="pending-orders-wrap">
+          <h3 class="sub-title">Pesanan Menunggu Konfirmasi</h3>
+          <div id="pendingOrdersList"></div>
+        </div>
+        <div class="pending-orders-wrap mt-30">
+          <h3 class="sub-title">Deposit Menunggu Konfirmasi</h3>
+          <div id="pendingDepositsList"></div>
+        </div>
+      </div>
+
+      <!-- Manage Products -->
+      <div id="tab-manageProducts" class="owner-tab-content">
+        <button class="btn-red mb-20" onclick="showModal('addProductModal')"><i class="fas fa-plus"></i> Tambah Produk</button>
+        <div id="ownerProductsList"></div>
+      </div>
+
+      <!-- Order Log -->
+      <div id="tab-orderLog" class="owner-tab-content">
+        <h3 class="sub-title">Log Semua Pesanan</h3>
+        <div id="orderLogList"></div>
+      </div>
+
+      <!-- Transaction History -->
+      <div id="tab-txHistory" class="owner-tab-content">
+        <h3 class="sub-title">History Transaksi</h3>
+        <div id="txHistoryList"></div>
+      </div>
+
+      <!-- Chat Owner -->
+      <div id="tab-chatOwner" class="owner-tab-content">
+        <h3 class="sub-title">Chat Pelanggan</h3>
+        <div class="chat-owner-wrap">
+          <div class="chat-user-list" id="chatUserList"></div>
+          <div class="chat-owner-window" id="chatOwnerWindow">
+            <div class="chat-placeholder"><i class="fas fa-comment-dots"></i><p>Pilih pelanggan untuk memulai chat</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Discounts -->
+      <div id="tab-discounts" class="owner-tab-content">
+        <button class="btn-red mb-20" onclick="showModal('addDiscountModal')"><i class="fas fa-plus"></i> Tambah Kode Diskon</button>
+        <div id="discountList"></div>
+      </div>
+
+      <!-- Badge Gift -->
+      <div id="tab-badgeGift" class="owner-tab-content">
+        <div class="badge-gift-panel">
+          <h3 class="sub-title">Beri Badge ke Pelanggan</h3>
+          <div class="form-group">
+            <label>Username Pelanggan</label>
+            <input type="text" id="badgeTargetUser" class="form-input" placeholder="Username..."/>
+          </div>
+          <div class="form-group">
+            <label>Pilih Badge</label>
+            <div class="badge-options">
+              <div class="badge-opt" onclick="selectBadge('warrior')" data-badge="warrior">
+                <span class="badge badge-warrior">⚔️ Warrior</span>
+              </div>
+              <div class="badge-opt" onclick="selectBadge('elite')" data-badge="elite">
+                <span class="badge badge-elite">💎 Elite</span>
+              </div>
+              <div class="badge-opt" onclick="selectBadge('master')" data-badge="master">
+                <span class="badge badge-master">🏆 Master</span>
+              </div>
+              <div class="badge-opt" onclick="selectBadge('grandmaster')" data-badge="grandmaster">
+                <span class="badge badge-grandmaster">👑 Grandmaster</span>
+              </div>
+              <div class="badge-opt" onclick="selectBadge('mythical')" data-badge="mythical">
+                <span class="badge badge-mythical">🌟 Mythical</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn-red" onclick="giftBadge()"><i class="fas fa-gift"></i> Beri Badge</button>
+        </div>
+        <div class="badge-gift-panel mt-30">
+          <h3 class="sub-title">Cabut Badge dari Pelanggan</h3>
+          <div class="form-group">
+            <input type="text" id="revokeBadgeUser" class="form-input" placeholder="Username..." />
+          </div>
+          <div class="form-group">
+            <input type="text" id="revokeBadgeName" class="form-input" placeholder="Nama badge (warrior/elite/master/grandmaster/mythical)"/>
+          </div>
+          <button class="btn-ghost" onclick="revokeBadge()"><i class="fas fa-times"></i> Cabut Badge</button>
+        </div>
+      </div>
+
+      <!-- Owner Settings -->
+      <div id="tab-ownerSettings" class="owner-tab-content">
+        <div class="settings-grid">
+          <div class="settings-card">
+            <h3><i class="fas fa-user-cog"></i> Akun Owner</h3>
+            <div class="form-group"><label>Username Owner</label><input type="text" id="setOwnerUsername" class="form-input"/></div>
+            <div class="form-group"><label>Password Lama</label><input type="password" id="setOwnerPassOld" class="form-input"/></div>
+            <div class="form-group"><label>Password Baru</label><input type="password" id="setOwnerPassNew" class="form-input"/></div>
+            <button class="btn-red" onclick="saveOwnerAccount()">Simpan Akun</button>
+          </div>
+          <div class="settings-card">
+            <h3><i class="fas fa-university"></i> Rekening & E-Wallet</h3>
+            <div class="form-group"><label>Bank (BCA/BRI/BNI/dll)</label><input type="text" id="setBankName" class="form-input" placeholder="Nama Bank"/></div>
+            <div class="form-group"><label>No. Rekening</label><input type="text" id="setBankNo" class="form-input" placeholder="No. Rekening"/></div>
+            <div class="form-group"><label>Nama Pemilik Rekening</label><input type="text" id="setBankOwner" class="form-input" placeholder="Nama"/></div>
+            <div class="form-group"><label>GoPay / OVO / DANA</label><input type="text" id="setEwallet" class="form-input" placeholder="No. E-Wallet"/></div>
+            <button class="btn-red" onclick="savePaymentSettings()">Simpan Pembayaran</button>
+          </div>
+          <div class="settings-card">
+            <h3><i class="fab fa-discord"></i> Discord</h3>
+            <div class="form-group"><label>Link Discord</label><input type="text" id="setDiscordLink" class="form-input" placeholder="https://discord.gg/..."/></div>
+            <button class="btn-red" onclick="saveDiscordLink()">Simpan Discord</button>
+          </div>
+          <div class="settings-card">
+            <h3><i class="fas fa-star"></i> Kelola Ulasan</h3>
+            <div id="ownerReviewsList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- end #app -->
+
+<!-- ================ MODALS ================ -->
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal-overlay" onclick="closeModalOut(event,'loginModal')">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-sign-in-alt"></i> Login</h3><button class="modal-close" onclick="closeModal('loginModal')"><i class="fas fa-times"></i></button></div>
+    <div class="form-group"><label>Username</label><input type="text" id="loginUsername" class="form-input" placeholder="Username..."/></div>
+    <div class="form-group"><label>Password</label><input type="password" id="loginPassword" class="form-input" placeholder="Password..."/></div>
+    <button class="btn-red full" onclick="loginUser()"><i class="fas fa-sign-in-alt"></i> Login</button>
+    <p class="modal-footer-txt">Belum punya akun? <a onclick="swapModal('loginModal','registerModal')">Daftar</a></p>
+    <div id="loginError" class="error-msg"></div>
+  </div>
+</div>
+
+<!-- Register Modal -->
+<div id="registerModal" class="modal-overlay" onclick="closeModalOut(event,'registerModal')">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-user-plus"></i> Daftar Akun</h3><button class="modal-close" onclick="closeModal('registerModal')"><i class="fas fa-times"></i></button></div>
+    <div class="form-group"><label>Username</label><input type="text" id="regUsername" class="form-input" placeholder="Username..."/></div>
+    <div class="form-group"><label>Password</label><input type="password" id="regPassword" class="form-input" placeholder="Password..."/></div>
+    <div class="form-group"><label>Konfirmasi Password</label><input type="password" id="regConfirm" class="form-input" placeholder="Konfirmasi..."/></div>
+    <button class="btn-red full" onclick="registerUser()"><i class="fas fa-user-plus"></i> Daftar</button>
+    <p class="modal-footer-txt">Sudah punya akun? <a onclick="swapModal('registerModal','loginModal')">Login</a></p>
+    <div id="regError" class="error-msg"></div>
+  </div>
+</div>
+
+<!-- Product Detail Modal -->
+<div id="productModal" class="modal-overlay" onclick="closeModalOut(event,'productModal')">
+  <div class="modal-box wide">
+    <div class="modal-header"><h3 id="pdTitle">Detail Produk</h3><button class="modal-close" onclick="closeModal('productModal')"><i class="fas fa-times"></i></button></div>
+    <div class="product-detail-body">
+      <img id="pdImage" src="" alt="" class="pd-img"/>
+      <div class="pd-info">
+        <div class="pd-badges-row">
+          <span id="pdCategory" class="pd-category-badge"></span>
+          <span id="pdStock" class="pd-stock-badge"></span>
+          <span id="pdDiscountBadge" class="pd-discount-badge" style="display:none"></span>
+        </div>
+        <p id="pdDescription" class="pd-desc"></p>
+        <div class="pd-price-row">
+          <div>
+            <span class="pd-original-price" id="pdOriginalPrice" style="display:none"></span>
+            <span class="pd-price" id="pdPrice"></span>
+          </div>
+          <span class="pd-coin-price" id="pdCoinPrice"></span>
+        </div>
+        <div class="discount-row">
+          <input type="text" id="discountCodeInput" class="form-input small" placeholder="Kode diskon..."/>
+          <button class="btn-ghost small" onclick="applyDiscount()">Pakai</button>
+          <span id="discountMsg" class="discount-result"></span>
+        </div>
+        <div class="pd-btns">
+          <button class="btn-red" onclick="buyWithIDR()"><i class="fas fa-money-bill"></i> Beli IDR</button>
+          <button class="btn-outline" onclick="buyWithCoin()"><i class="fas fa-coins"></i> Beli Koin</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div id="paymentModal" class="modal-overlay" onclick="closeModalOut(event,'paymentModal')">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-credit-card"></i> Pembayaran</h3><button class="modal-close" onclick="closeModal('paymentModal')"><i class="fas fa-times"></i></button></div>
+    <div id="paymentContent"></div>
+  </div>
+</div>
+
+<!-- Top Up Modal -->
+<div id="topupModal" class="modal-overlay" onclick="closeModalOut(event,'topupModal')">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-wallet"></i> Top Up Saldo IDR</h3><button class="modal-close" onclick="closeModal('topupModal')"><i class="fas fa-times"></i></button></div>
+    <div class="form-group"><label>Jumlah (Rp)</label><input type="number" id="topupAmount" class="form-input" placeholder="Minimal Rp 10.000"/></div>
+    <button class="btn-red full" onclick="processTopup()"><i class="fas fa-arrow-right"></i> Lanjut Pembayaran</button>
+  </div>
+</div>
+
+<!-- Top Up Coin Modal -->
+<div id="topupCoinModal" class="modal-overlay" onclick="closeModalOut(event,'topupCoinModal')">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-coins"></i> Top Up Koin</h3><button class="modal-close" onclick="closeModal('topupCoinModal')"><i class="fas fa-times"></i></button></div>
+    <div class="coin-packages" id="coinPackages"></div>
+  </div>
+</div>
+
+<!-- Deposit Payment Modal -->
+<div id="depositPayModal" class="modal-overlay" onclick="closeModalOut(event,'depositPayModal')">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-university"></i> Instruksi Pembayaran</h3><button class="modal-close" onclick="closeModal('depositPayModal')"><i class="fas fa-times"></i></button></div>
+    <div id="depositPayContent"></div>
+  </div>
+</div>
+
+<!-- Add Product Modal -->
+<div id="addProductModal" class="modal-overlay" onclick="closeModalOut(event,'addProductModal')">
+  <div class="modal-box wide">
+    <div class="modal-header"><h3 id="addProdTitle"><i class="fas fa-plus"></i> Tambah Produk</h3><button class="modal-close" onclick="closeModal('addProductModal')"><i class="fas fa-times"></i></button></div>
+    <input type="hidden" id="editProductId"/>
+    <div class="form-grid">
+      <div class="form-group"><label>Nama Produk</label><input type="text" id="prodName" class="form-input"/></div>
+      <div class="form-group"><label>Kategori</label><input type="text" id="prodCategory" class="form-input" placeholder="Game, Software, dll"/></div>
+      <div class="form-group"><label>Harga IDR</label><input type="number" id="prodPrice" class="form-input"/></div>
+      <div class="form-group"><label>Harga Koin</label><input type="number" id="prodCoinPrice" class="form-input"/></div>
+      <div class="form-group"><label>Stok</label><input type="number" id="prodStock" class="form-input"/></div>
+      <div class="form-group">
+        <label>Gambar Produk</label>
+        <input type="file" id="prodImage" class="form-input" accept="image/*"/>
+      </div>
+    </div>
+    <div class="form-group"><label>Deskripsi</label><textarea id="prodDesc" class="form-input" rows="3"></textarea></div>
+    <button class="btn-red full" onclick="saveProduct()"><i class="fas fa-save"></i> Simpan Produk</button>
+  </div>
+</div>
+
+<!-- Add Discount Modal -->
+<div id="addDiscountModal" class="modal-overlay" onclick="closeModalOut(event,'addDiscountModal')">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-tag"></i> Tambah Kode Diskon</h3><button class="modal-close" onclick="closeModal('addDiscountModal')"><i class="fas fa-times"></i></button></div>
+    <div class="form-group"><label>Kode Diskon</label><input type="text" id="discCodeInput" class="form-input" placeholder="DISC10"/></div>
+    <div class="form-group"><label>Persentase Diskon (%)</label><input type="number" id="discPercent" class="form-input" placeholder="10"/></div>
+    <div class="form-group"><label>Batas Penggunaan</label><input type="number" id="discLimit" class="form-input" placeholder="100"/></div>
+    <button class="btn-red full" onclick="saveDiscount()"><i class="fas fa-save"></i> Simpan</button>
+  </div>
+</div>
+
+<!-- Chat Modal (Customer) -->
+<div id="chatModal" class="modal-overlay" onclick="closeModalOut(event,'chatModal')">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-headset"></i> Chat Customer Service</h3><button class="modal-close" onclick="closeModal('chatModal')"><i class="fas fa-times"></i></button></div>
+    <div class="chat-window" id="chatMessages"></div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" class="form-input" placeholder="Ketik pesan..." onkeydown="if(event.key==='Enter')sendChatMsg()"/>
+      <button class="btn-red" onclick="sendChatMsg()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- Proof Upload Modal -->
+<div id="proofModal" class="modal-overlay" onclick="closeModalOut(event,'proofModal')">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-upload"></i> Upload Bukti Pembayaran</h3><button class="modal-close" onclick="closeModal('proofModal')"><i class="fas fa-times"></i></button></div>
+    <p class="modal-desc">Upload screenshot/foto bukti pembayaran Anda</p>
+    <div id="proofContext" class="proof-context-box"></div>
+    <div class="form-group">
+      <label>Bukti Pembayaran</label>
+      <input type="file" id="proofFile" class="form-input" accept="image/*"/>
+    </div>
+    <button class="btn-red full" onclick="submitProof()"><i class="fas fa-check"></i> Kirim Bukti</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- Owner Login Overlay -->
+<div id="ownerLoginOverlay" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-crown"></i> Owner Login</h3></div>
+    <div class="form-group"><label>Password Owner</label><input type="password" id="ownerLoginPass" class="form-input" placeholder="Password..."/></div>
+    <button class="btn-red full" onclick="verifyOwnerLogin()">Masuk</button>
+    <button class="btn-ghost full mt-10" onclick="closeModal('ownerLoginOverlay'); showSection('home')">Batal</button>
+    <div id="ownerLoginError" class="error-msg"></div>
+  </div>
+</div>
+
+<!-- Write Review Modal -->
+<div id="reviewModal" class="modal-overlay" onclick="closeModalOut(event,'reviewModal')">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-star"></i> Tulis Ulasan</h3><button class="modal-close" onclick="closeModal('reviewModal')"><i class="fas fa-times"></i></button></div>
+    <div class="form-group"><label>Rating</label>
+      <div class="star-input" id="starInput">
+        <i class="fas fa-star" onclick="setRating(1)" data-r="1"></i>
+        <i class="fas fa-star" onclick="setRating(2)" data-r="2"></i>
+        <i class="fas fa-star" onclick="setRating(3)" data-r="3"></i>
+        <i class="fas fa-star" onclick="setRating(4)" data-r="4"></i>
+        <i class="fas fa-star" onclick="setRating(5)" data-r="5"></i>
+      </div>
+    </div>
+    <div class="form-group"><label>Ulasan</label><textarea id="reviewText" class="form-input" rows="3" placeholder="Bagikan pengalaman Anda..."></textarea></div>
+    <input type="hidden" id="reviewOrderId"/>
+    <input type="hidden" id="reviewProductId"/>
+    <button class="btn-red full" onclick="submitReview()"><i class="fas fa-paper-plane"></i> Kirim Ulasan</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
