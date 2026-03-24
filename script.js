@@ -22,7 +22,7 @@ const firestore = firebase.firestore();
 const storage = firebase.storage();
 
 // ============ CONSTANTS ============
-const OWNER_USERNAME = "NIKS"; // Username owner
+const OWNER_USERNAME = "DOOMINIKS"; // Username owner
 const COIN_RATE = 1000; // 1 coin = Rp 1.000
 const TOPUP_PACKAGES = [
   { coins: 50, price: 50000, bonus: 0 },
