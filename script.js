@@ -1173,4 +1173,39 @@ const waitOwner = setInterval(() => {
       }
     }
   });
-}, 300);
+}, 100);
+
+// ===== FIX AUTH UI =====
+const waitAuthUI = setInterval(() => {
+  if (!window._firebase) return;
+  clearInterval(waitAuthUI);
+
+  const { auth, onAuthStateChanged } = window._firebase;
+
+  onAuthStateChanged(auth, (user) => {
+    const navGuest = document.getElementById("navGuest");
+    const navUser = document.getElementById("navUser");
+    const navUsername = document.getElementById("navUsername");
+
+    if (!navGuest || !navUser) {
+      console.log("Navbar tidak ditemukan");
+      return;
+    }
+
+    if (user) {
+      navGuest.style.display = "none";
+      navUser.style.display = "flex";
+
+      if (navUsername) {
+        navUsername.innerText = user.email;
+      }
+
+      console.log("Login:", user.email);
+    } else {
+      navGuest.style.display = "flex";
+      navUser.style.display = "none";
+
+      console.log("Belum login");
+    }
+  });
+}, 100);
