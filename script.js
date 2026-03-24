@@ -1,12 +1,12 @@
 // ===== Firebase Configuration =====
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyAuZLwwomxlNUjcPp4JYILdSz4EAWtoRxY",
+    authDomain: "dooniniks-paradise.firebaseapp.com",
+    databaseURL: "https://dooniniks-paradise-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "dooniniks-paradise",
+    storageBucket: "dooniniks-paradise.firebasestorage.app",
+    messagingSenderId: "140802324914",
+    appId: "1:140802324914:web:f2e4f4f4656b75b240ccab"
 };
 
 // Initialize Firebase
