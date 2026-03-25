@@ -5,14 +5,15 @@ import { getFirestore } from 'firebase/firestore';
 // Konfigurasi Firebase - GANTI DENGAN KONFIGURASI ANDA SENDIRI
 // Buat project di https://console.firebase.google.com/
 const firebaseConfig = {
-  apiKey: "AIzaSyDECWw2-w_HdtmIFp5eJB1es_h8lpT0Gt4",
-  authDomain: "doominiks-niks.firebaseapp.com",
-  databaseURL: "https://doominiks-niks-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "doominiks-niks",
-  storageBucket: "doominiks-niks.firebasestorage.app",
-  messagingSenderId: "504521349704",
-  appId: "1:504521349704:web:15f0305b8cf9da746f567d",
-  measurementId: "G-1K0XJ24LBL"
+ const firebaseConfig = {
+  apiKey: "AIzaSyAuZLwwomxlNUjcPp4JYILdSz4EAWtoRxY",
+  authDomain: "dooniniks-paradise.firebaseapp.com",
+  databaseURL: "https://dooniniks-paradise-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "dooniniks-paradise",
+  storageBucket: "dooniniks-paradise.firebasestorage.app",
+  messagingSenderId: "140802324914",
+  appId: "1:140802324914:web:f2e4f4f4656b75b240ccab",
+  measurementId: "G-Z001R5J8NR"
 };
 
 // Initialize Firebase
