@@ -5,12 +5,14 @@ import { getFirestore } from 'firebase/firestore';
 // Konfigurasi Firebase - GANTI DENGAN KONFIGURASI ANDA SENDIRI
 // Buat project di https://console.firebase.google.com/
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDECWw2-w_HdtmIFp5eJB1es_h8lpT0Gt4",
+  authDomain: "doominiks-niks.firebaseapp.com",
+  databaseURL: "https://doominiks-niks-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "doominiks-niks",
+  storageBucket: "doominiks-niks.firebasestorage.app",
+  messagingSenderId: "504521349704",
+  appId: "1:504521349704:web:15f0305b8cf9da746f567d",
+  measurementId: "G-1K0XJ24LBL"
 };
 
 // Initialize Firebase
